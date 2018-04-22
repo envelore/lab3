@@ -13,6 +13,7 @@ pid_t pid, child_pid;
 void main(void)
 {
 	signal(SIGQUIT, SIG_IGN);
+	int mode = 1;
 	int status;
 	char *words[ARGBUF];
 	char proc[STRBUF];
@@ -27,7 +28,14 @@ void main(void)
 			words[i++] = ptr;
 			ptr = strtok (NULL, sep);
 		}
-			
+
+		if (i > 1 && strcmp(words[i-1], "x") == 0) {
+			mode = 0;
+			words[i-1] = NULL;
+		} else {
+			words[i] = NULL;
+		}
+
 		if (strcmp(words[0], "break") == 0)
 			exit(0);
 		if (strcmp(words[0], "cd") == 0) {
@@ -54,13 +62,15 @@ void main(void)
 			printf("child PID = %d\n",pid);
 			printf("Waiting for child...\n");
 			printf("******************************\n");
-			child_pid = pid;
-			child_pid = wait(&status);
-			printf("Child has finished: PID = %d\n",child_pid);
-			if (WIFEXITED(status))
-				printf("Child proc exited: code %d\n",WIFEXITED(status));
-			else
-				printf("Child exited with error\n");
+			if (mode) {
+				child_pid = pid;
+				child_pid = wait(&status);
+				printf("Child has finished: PID = %d %s\n",child_pid, words[0]);
+				if (WIFEXITED(status))
+					printf("Child proc exited: code %d\n",WIFEXITED(status));
+				else
+					printf("Child exited with error\n");
+			}
 		}
 	}
 }
